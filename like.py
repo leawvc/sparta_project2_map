@@ -17,7 +17,7 @@ def update_like():
 
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        user_info = db.user.find_one({"id": payload["id"]})
+        user_info = db.users.find_one({"username": payload["id"]})
         postid_receive = request.form['postid_give']
         action_receive = request.form['action_give']
 
@@ -30,10 +30,10 @@ def update_like():
 
         if action_receive == "like":
             db.like.insert_one(doc)
-            db.post.update_one({'_id': postid_receive}, {'$set': {'like': total_like + 1}})
+            db.post.update_one({'postid': postid_receive}, {'$set': {'like': total_like + 1}})
         else:
             db.like.delete_one(doc)
-            db.post.update_one({'_id': postid_receive}, {'$set': {'like': total_like - 1}})
+            db.post.update_one({'postid': postid_receive}, {'$set': {'like': total_like - 1}})
 
         count = db.like.count_documents({"postid": postid_receive})
         return jsonify({"result": "success", "msg": "updated", "count": count})
