@@ -1,10 +1,592 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8">
+    <title>Make A Plan</title>
+    <link rel="stylesheet" href="static/planstyle.css">
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=26ca3bb251f3783d5a218c186f922d4a&libraries=services"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <!-- font -->
+
+
+    <link href="https://hangeul.pstatic.net/hangeul_static/css/NanumGoDigANiGoGoDing.css" rel="stylesheet">
+    <!-- mainstyle -->
+    <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <script>
+
+        let day; // 2박 3일
+        let day_status; // 선택한 일 상태
+        let post_id;
+        //일(day) 마다 갖고 있는 마커 배열
+
+
+        $(document).ready(function () {
+
+            day = -1;
+            //초기 선택 일 = 1로 설정
+            day_status = 1;
+
+            //큰 여행 리스트, 그 안에 일정 생성
+            create_plan(day);
+            read_schedule();
+
+            // 여행일 변경시 작동
+            $('#select_day').on('change', function () {
+                alert(this.value + '일치 일정을 추가해 주세요')
+                day = this.value
+                create_plan(day);
+                read_schedule();
+            });
+
+            //사용할 postid 받아오기
+            $.ajax({
+                type: "GET",
+                url: "/last_id",
+                data: {},
+                success: function (response) {
+                    post_id = response['result']
+                    console.log('postid:', post_id)
+                }
+            })
+
+        })
+
+        //큰 계획 일정 만드는 함수
+        function create_plan(day) {
+            $('#day_plan').empty()
+
+            for (let i = 0; i < day; i++) {
+                let temp_html = `<h4 onclick="change_status(${i + 1})">${i + 1}일</h4>
+                    <li class="list-group-item" >
+                        <ul class="list-group" id="schedule-${i + 1}" style="height: 200px; overflow: auto; border-radius: 10px;">
+
+                        </ul>
+                    </li>`
+
+                $('#day_plan').append(temp_html);
+            }
+        }
+
+
+        function change_status(num) {
+            day_status = num;
+            alert(day_status + '일을 선택했습니다. 일정을 추가해 주세요')
+        }
+
+        //작은 일정 만들어서 디비에 저장
+        function api_create_schedule(title, address, y, x, phone, url) {
+            $.ajax({
+                type: "POST",
+                url: "/trip/schedule/create",
+                data: {
+                    give_postid: post_id,
+                    give_date: day_status,
+                    give_place_name: title,
+                    give_address: address,
+                    give_x: x,
+                    give_y: y,
+                    give_phone: phone,
+                    give_url: url
+                },
+                success: function (response) {
+                    console.log('api_create_schedule: ' + response['result'])
+                    console.log(title, address, y, x, phone, url)
+                    read_schedule();
+                }
+            })
+
+        }
+
+        // 디비에서 일정 받아와 화면에 그려주기
+        function read_schedule() {
+            for (let i = 0; i < day_status; i++) {
+                $(`#schedule-${i + 1}`).empty()
+            }
+            $.ajax({
+                type: "GET",
+                url: "/trip/schedule/read",
+                data: {give_postid : post_id},
+                success: function (response) {
+                    let schedules = response['result']
+                    for (let i = 0; i < schedules.length; i++) {
+
+                        let schedule = schedules[i];
+
+                        let temp_html = `<li class="list-group-item">
+                                        <button onclick="delete_schedule(${schedule.postid}, ${schedule.date}, ${schedule.x}, ${schedule.y})" style="float: right">취소</button>
+                                        <h5>${schedule.place_name}</h5>
+                                        <p style="font-size: 15px">${schedule.address}</p>
+                                        <p style="font-size: 12px; color: green">${schedule.phone}</p>
+                                        `
+
+                        $(`#schedule-${schedule.date}`).append(temp_html)
+
+                    }
+
+                }
+            })
+        }
+
+        function delete_schedule(postid, date, x, y) {
+            console.log(postid, date, x, y, "들어왔다")
+            $.ajax({
+                type: "POST",
+                url: "/trip/schedule/delete",
+                data: {give_postid: postid, give_date: date, give_x: x, give_y: y},
+                success: function (response) {
+                    console.log(response['result'])
+                    create_plan(day);
+                    read_schedule();
+                }
+            })
+
+        }
+
+        function alldelete(){
+            $.ajax({
+                type: "POST",
+                url: "/trip/schedule/alldelete",
+                data: {give_postid: post_id},
+                success: function (response) {
+                    console.log(response['result'])
+                    create_plan(-1);
+                    read_schedule();
+                }
+            })
+        }
+
+        function savepost(){
+            let title = $('#mytitle').val();
+            console.log(title)
+            $.ajax({
+                type: "POST",
+                url: "/trip/posts/create",
+                data: {
+                    give_postid: post_id,
+                    give_userid: null,
+                    give_img: null,
+                    give_day: day_status,
+                    give_tag: null,
+                    give_title: title,
+                    give_like: 0
+                },
+
+                success: function (response) {
+                    console.log(response['result'])
+                    window.location.href='/'
+                }
+            })
+        }
+    </script>
 </head>
 <body>
+<div class="hero is-small is-primary">
+    <div class="hero-body has-text-centered">
+        <h1 class="title is-sparta" style="float:left">MAP</h1>
+        <button class="button is-primary is-light" style="float:right">Logout</button>
+    </div>
+</div>
 
+<div style="width: 100%; height: 100px">
+</div>
+
+<div class="contents" style="padding: 30px">
+    <div class="map_wrap">
+
+        <div id="map" style="width:100%;height:100%;position:relative;overflow:hidden;"></div>
+
+        <div id="menu_wrap" class="bg_white">
+            <div class="option">
+                <div>
+                    <form onsubmit="searchPlaces(); return false;">
+                        키워드 : <input type="text" value="강남 스파르타" id="keyword" size="15">
+                        <button type="submit">검색하기</button>
+                    </form>
+                </div>
+            </div>
+            <hr>
+            <ul id="placesList"></ul>
+            <div id="pagination"></div>
+        </div>
+    </div>
+
+    <div class="plan_wrap" style="border-radius: 10px;">
+        <div class="plan_title" style="width:100%; margin:20px 10px 20px 20px; border-radius: 10px;">
+            <input type="text" id="mytitle" style="font-size: 30px; text-align:center;">
+        </div>
+
+        <div>
+            <select style="float: right" id="select_day">
+                <option label="선택" selected></option>
+                <option value=1 label="하루"></option>
+                <option value=2 label="1박 2일"></option>
+                <option value=3 label="2박 3일"></option>
+                <option value=4 label="3박 4일"></option>
+                <option value=5 label="4박 5일"></option>
+            </select>
+        </div>
+
+        <div class="myplan" style="padding: 20px;">
+            <h3 style="margin-bottom: 20px">여행 계획</h3>
+            <div>
+                <ul id="day_plan" class="list-group" style="height: 400px; overflow: auto; border-radius: 10px;">
+                    <h4>1일</h4>
+                    <li class="list-group-item">
+                        <ul class="list-group" style="height: 200px; overflow: auto; border-radius: 10px;">
+
+                            <li class="list-group-item">
+                                <button style="float: right">취소</button>
+                                <h5>샐프독서실</h5>
+                                <p style="font-size: 15px">서울 서초구 서초대로 78번길 28</p>
+                                <p style="font-size: 12px; color: green">02-522-5963</p>
+                                <p><textarea cols="25" rows="3" style="font-size: 15px"></textarea></p>
+
+                            </li>
+                            <li class="list-group-item">Dapibus ac facilisis in</li>
+                            <li class="list-group-item">Morbi leo risus</li>
+                            <li class="list-group-item">Porta ac consectetur ac</li>
+                            <li class="list-group-item">Vestibulum at eros</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        <h4>2일</h4>
+                        <ul class="list-group" style="height: 200px; overflow: auto;">
+
+                            <li class="list-group-item">Cras justo odio</li>
+                            <li class="list-group-item">Dapibus ac facilisis in</li>
+                            <li class="list-group-item">Morbi leo risus</li>
+                            <li class="list-group-item">Porta ac consectetur ac</li>
+                            <li class="list-group-item">Vestibulum at eros</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        <h4>3일</h4>
+                        <ul class="list-group" style="height: 200px; overflow: auto;">
+                            <li class="list-group-item">Cras justo odio</li>
+                            <li class="list-group-item">Dapibus ac facilisis in</li>
+                            <li class="list-group-item">Morbi leo risus</li>
+                            <li class="list-group-item">Porta ac consectetur ac</li>
+                            <li class="list-group-item">Vestibulum at eros</li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="bottom" style="width: 100%; margin: 20px; padding: 20px">
+            <button onclick="savepost()" style="float: right; margin-left: 10px">저장하기</button>
+            <button onclick="route()" style="float: right; margin-left: 10px">경로보기</button>
+            <button onclick="alldelete()" style="float: right">내용삭제</button>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    function route() {
+        removeMarker();
+        var positions = []
+        var linePath = [];
+
+        $.ajax({
+            type: "GET",
+            url: "/trip/schedule/read",
+            data: {give_postid: post_id},
+            success: function (response) {
+                let schedules = response['result']
+                for (let i = 0; i < schedules.length; i++) {
+
+                    console.log(schedules[i].place_name, schedules[i].y, schedules[i].x)
+                    var position = {
+                        title: schedules[i].place_name,
+                        latlng: new kakao.maps.LatLng(parseFloat(schedules[i].y), parseFloat(schedules[i].x))
+                    }
+
+                    var line = new kakao.maps.LatLng(parseFloat(schedules[i].y), parseFloat(schedules[i].x))
+                    positions.push(position);
+                    linePath.push(line);
+
+                }
+                console.log(positions)
+                // 마커 이미지의 이미지 주소입니다
+                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+
+                for (var i = 0; i < positions.length; i++) {
+
+                    // 마커 이미지의 이미지 크기 입니다
+                    var imageSize = new kakao.maps.Size(24, 35);
+
+                    // 마커 이미지를 생성합니다
+                    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+                    // 마커를 생성합니다
+                    var marker = new kakao.maps.Marker({
+                        map: map, // 마커를 표시할 지도
+                        position: positions[i].latlng, // 마커를 표시할 위치
+                        title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+                        image: markerImage // 마커 이미지
+                    });
+                }
+
+                var polyline = new kakao.maps.Polyline({
+                    path: linePath, // 선을 구성하는 좌표배열 입니다
+                    strokeWeight: 5, // 선의 두께 입니다
+                    strokeColor: '#FFAE00', // 선의 색깔입니다
+                    strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+                    strokeStyle: 'solid' // 선의 스타일입니다
+                });
+                polyline.setMap(map);
+            }
+
+
+        })
+
+
+    }
+
+    // 마커를 담을 배열입니다
+    var markers = [];
+
+    var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+        mapOption = {
+            center: new kakao.maps.LatLng(37.566826, 126.9786567), // 지도의 중심좌표
+            level: 3 // 지도의 확대 레벨
+        };
+
+    // 지도를 생성합니다
+    var map = new kakao.maps.Map(mapContainer, mapOption);
+
+    // 장소 검색 객체를 생성합니다
+    var ps = new kakao.maps.services.Places();
+
+    // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우를 생성합니다
+    var infowindow = new kakao.maps.InfoWindow({zIndex: 1});
+
+    // 키워드로 장소를 검색합니다
+    searchPlaces();
+
+    // 키워드 검색을 요청하는 함수입니다
+    function searchPlaces() {
+
+        var keyword = document.getElementById('keyword').value;
+
+        if (!keyword.replace(/^\s+|\s+$/g, '')) {
+            alert('키워드를 입력해주세요!');
+            return false;
+        }
+
+        // 장소검색 객체를 통해 키워드로 장소검색을 요청합니다
+        ps.keywordSearch(keyword, placesSearchCB);
+    }
+
+    // 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
+    function placesSearchCB(data, status, pagination) {
+        if (status === kakao.maps.services.Status.OK) {
+
+            // 정상적으로 검색이 완료됐으면
+            // 검색 목록과 마커를 표출합니다
+            displayPlaces(data);
+
+            // 페이지 번호를 표출합니다
+            displayPagination(pagination);
+
+        } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+
+            alert('검색 결과가 존재하지 않습니다.');
+            return;
+
+        } else if (status === kakao.maps.services.Status.ERROR) {
+
+            alert('검색 결과 중 오류가 발생했습니다.');
+            return;
+
+        }
+    }
+
+    // 검색 결과 목록과 마커를 표출하는 함수입니다
+    function displayPlaces(places) {
+
+        var listEl = document.getElementById('placesList'),
+            menuEl = document.getElementById('menu_wrap'),
+            fragment = document.createDocumentFragment(),
+            bounds = new kakao.maps.LatLngBounds(),
+            listStr = '';
+
+        // 검색 결과 목록에 추가된 항목들을 제거합니다
+        removeAllChildNods(listEl);
+
+        // 지도에 표시되고 있는 마커를 제거합니다
+        removeMarker();
+
+        for (var i = 0; i < places.length; i++) {
+
+            // 마커를 생성하고 지도에 표시합니다
+            var placePosition = new kakao.maps.LatLng(places[i].y, places[i].x),
+                marker = addMarker(placePosition, i),
+                itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element를 생성합니다
+
+            // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
+            // LatLngBounds 객체에 좌표를 추가합니다
+            bounds.extend(placePosition);
+
+            // 마커와 검색결과 항목에 mouseover 했을때
+            // 해당 장소에 인포윈도우에 장소명을 표시합니다
+            // mouseout 했을 때는 인포윈도우를 닫습니다
+            (function (marker, title, address, y, x, phone, url) {
+                kakao.maps.event.addListener(marker, 'mouseover', function () {
+                    displayInfowindow(marker, title);
+                });
+
+                kakao.maps.event.addListener(marker, 'mouseout', function () {
+                    infowindow.close();
+                });
+
+                itemEl.onmouseover = function () {
+                    displayInfowindow(marker, title);
+                };
+
+                itemEl.onmouseout = function () {
+                    infowindow.close();
+                };
+
+                itemEl.onclick = function () {
+                    alert(title)
+                    api_create_schedule(title, address, y, x, phone, url);
+
+                };
+
+            })(marker, places[i].place_name, places[i].address_name, places[i].y, places[i].x, places[i].phone, places[i].place_url);
+
+            fragment.appendChild(itemEl);
+        }
+
+        // 검색결과 항목들을 검색결과 목록 Element에 추가합니다
+        listEl.appendChild(fragment);
+        menuEl.scrollTop = 0;
+
+        // 검색된 장소 위치를 기준으로 지도 범위를 재설정합니다
+        map.setBounds(bounds);
+    }
+
+    // 검색결과 항목을 Element로 반환하는 함수입니다
+    function getListItem(index, places) {
+
+        var el = document.createElement('li'),
+            itemStr = '<span " class="markerbg marker_' + (index + 1) + '"></span>' +
+                '<div class="info">' +
+                '   <h5>' + places.place_name + '</h5>';
+
+        if (places.road_address_name) {
+            itemStr += '    <span>' + places.road_address_name + '</span>' +
+                '   <span class="jibun gray">' + places.address_name + '</span>';
+        } else {
+            itemStr += '    <span>' + places.address_name + '</span>';
+        }
+
+        itemStr += '  <span class="tel">' + places.phone + '</span>' +
+            '</div>';
+
+        el.innerHTML = itemStr;
+        el.className = 'item';
+
+        return el;
+    }
+
+    // 마커를 생성하고 지도 위에 마커를 표시하는 함수입니다
+    function addMarker(position, idx, title) {
+        var imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png', // 마커 이미지 url, 스프라이트 이미지를 씁니다
+            imageSize = new kakao.maps.Size(36, 37),  // 마커 이미지의 크기
+            imgOptions = {
+                spriteSize: new kakao.maps.Size(36, 691), // 스프라이트 이미지의 크기
+                spriteOrigin: new kakao.maps.Point(0, (idx * 46) + 10), // 스프라이트 이미지 중 사용할 영역의 좌상단 좌표
+                offset: new kakao.maps.Point(13, 37) // 마커 좌표에 일치시킬 이미지 내에서의 좌표
+            },
+            markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imgOptions),
+            marker = new kakao.maps.Marker({
+                position: position, // 마커의 위치
+                image: markerImage
+            });
+
+        marker.setMap(map); // 지도 위에 마커를 표출합니다
+        markers.push(marker);  // 배열에 생성된 마커를 추가합니다
+
+        return marker;
+    }
+
+    // 지도 위에 표시되고 있는 마커를 모두 제거합니다
+    function removeMarker() {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
+        markers = [];
+    }
+
+    // 검색결과 목록 하단에 페이지번호를 표시는 함수입니다
+    function displayPagination(pagination) {
+        var paginationEl = document.getElementById('pagination'),
+            fragment = document.createDocumentFragment(),
+            i;
+
+        // 기존에 추가된 페이지번호를 삭제합니다
+        while (paginationEl.hasChildNodes()) {
+            paginationEl.removeChild(paginationEl.lastChild);
+        }
+
+        for (i = 1; i <= pagination.last; i++) {
+            var el = document.createElement('a');
+            el.href = "#";
+            el.innerHTML = i;
+
+            if (i === pagination.current) {
+                el.className = 'on';
+            } else {
+                el.onclick = (function (i) {
+                    return function () {
+                        pagination.gotoPage(i);
+                    }
+                })(i);
+            }
+
+            fragment.appendChild(el);
+        }
+        paginationEl.appendChild(fragment);
+    }
+
+    // 검색결과 목록 또는 마커를 클릭했을 때 호출되는 함수입니다
+    // 인포윈도우에 장소명을 표시합니다
+    function displayInfowindow(marker, title) {
+        var content = '<div style="padding:5px;z-index:1;">' + title + '</div>';
+
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+    }
+
+    // 검색결과 목록의 자식 Element를 제거하는 함수입니다
+    function removeAllChildNods(el) {
+        while (el.hasChildNodes()) {
+            el.removeChild(el.lastChild);
+        }
+    }
+</script>
 </body>
 </html>
