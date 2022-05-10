@@ -105,13 +105,13 @@
 
                 <figure class="media-left" style="align-self: center">
                     <a class="image is-96x96" href="#">
-                        <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile) }}">
+                        <img class="is-rounded" src="static/profile_placeholder.png">
                     </a>
                 </figure>
                 <div class="media-content">
                     <div class="content">
                         <p>
-                            <strong>{{ user_info.nickname }}</strong> <small>@{{ user_info.username }}</small>
+                            <strong>닉네임</strong> <small>@아이디</small>
                             <br>
                         </p>
                     </div>
@@ -135,7 +135,7 @@
                                             <label class="label" for="input-name">이름</label>
                                             <p class="control">
                                                 <input id="input-name" class="input"
-                                                       placeholder="홍길동" value="{{ user_info.profile_name }}">
+                                                       placeholder="홍길동"  >  {#  value 주기  #}
                                             </p>
                                         </div>
                                         <div class="field">
@@ -151,7 +151,7 @@
                                                         <span class="file-label">파일 선택</span>
                                                          </span>
                                                         <span id="file-name" class="file-name"
-                                                              style="width:100%;max-width:100%">{{ user_info.profile_pic }}</span>
+                                                              style="width:100%;max-width:100%"> </span>
                                                     </label>
                                                 </div>
                                             </div>

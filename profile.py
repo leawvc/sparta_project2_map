@@ -20,7 +20,7 @@ def save_img():
         name_receive = request.form["name_give"]
         about_receive = request.form["about_give"]
         new_doc = {
-            "profile_name": name_receive
+            "profile_name" : name_receive
         }
         if 'file_give' in request.files:
             file = request.files["file_give"]
@@ -36,7 +36,7 @@ def save_img():
         return redirect(url_for("home"))
 
 
-@profile_api.route('/trip/mypage/<id>', methds=['POST'])
+@profile_api.route('/trip/mypage/<id>', methods=['POST'])
 def get_user(id):
     token_receive = request.cookies.get('mytoken')
     try:
