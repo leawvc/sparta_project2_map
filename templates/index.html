@@ -104,8 +104,15 @@
             window.location.reload()
         }
 
-
-
+        function go_plan(){
+            if ('{{ status }}' == 'yes'){
+                window.location.href = '/plan'
+            }
+            else{
+                alert('로그인 해주세요')
+                window.location.href = '/login'
+            }
+        }
     </script>
 
 
@@ -120,7 +127,8 @@
             <button id='loginbtn' class="button is-primary is-light" style="float:right">Login</button>
         </a>
         <button id='logoutbtn' onclick="logout()" class="button is-primary is-light" style="float:right">Logout</button>
-        <p class="design is-sparta"><a href="/plan">여행설계</a></p>
+
+        <p class="design is-sparta" onclick="go_plan()"><a href="#">여행설계</a></p>
     </div>
 </div>
 
@@ -142,8 +150,8 @@
 {#        </nav>#}
 
 {# detail 카드 #}
-<div class="card_tool" style="width: 1700px; height: auto; margin: auto;">
-    <div class="card" style="margin: 5px 40px 65px 40px;">
+<div class="card_tool" style="width: 1700px; height: auto; margin: auto; background-color: pink">
+    <div class="card" style="margin: 5px 40px 65px 40px; float:left;">
         <div class="card-content">
             <div class="media">
                 <div class="media-left">
@@ -166,6 +174,32 @@
             </a>
         </div>
     </div>
+
+    <div class="card" style="margin: 5px 40px 65px 40px; float:left;">
+        <div class="card-content">
+            <div class="media">
+                <div class="media-left">
+                    <figure class="image is-4by3">
+                        <a href="/detail">
+                            <img class="car_img" src="https://bulma.io/images/placeholders/96x96.png"
+                                 alt="Placeholder image">
+                        </a>
+                    </figure>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            {# detail 카드 제목 #}
+            <p class="is-three-quarters"><a href="/detail">여기에 제목을 넣을 생각입니다. 2줄 들어갑니다.</a></p>
+            {# detail 좋아요 아이콘 #}
+            <a>
+                <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
+                     style="width: 20px; height: 20px">
+            </a>
+        </div>
+    </div>
+
+
 </div>
 </body>
 </html>
