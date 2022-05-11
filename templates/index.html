@@ -121,6 +121,7 @@
         });
 
         function plane_cards() {
+             $('#cards').empty()
             $.ajax({
                 type: "GET",
                 url: "/trip/posts/read",
@@ -131,13 +132,15 @@
                         let card_img = card[i]['img']
                         let title = card[i]['title']
                         let like = card[i]['like']
+                        let postid = card[i]['postid']
+                        console.log(postid)
 
                         let temp_html = `<div class="card" style="margin: 5px 40px 65px 40px; float:left;">
                                             <div class="card-content">
                                                 <div class="media">
                                                     <div class="media-left">
                                                         <figure class="image is-4by3">
-                                                            <a href="/detail">
+                                                            <a href="/detail/${postid}">
                                                                 <img class="car_img" src="../static/${card_img}"
                                                                      alt="Placeholder image"/>
                                                             </a>
@@ -147,7 +150,7 @@
                                             </div>
                                             <div class="columns">
                                                 {# detail 카드 제목 #}
-                                                <p class="is-three-quarters"><a href="/detail">${title}</a></p>
+                                                <p class="is-three-quarters"><a href="/detail/${postid}">${title}</a></p>
                                                 {# detail 좋아요 아이콘 #}
                                                 <a>
                                                     <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"

@@ -28,9 +28,9 @@ def plan():
 def mypage():
     return render_template('mypage.html')
 
-@app.route('/detail')
-def detail():
-    return render_template('detail.html')
+# @app.route('/detail')
+# def detail():
+#     return render_template('detail.html')
 
 @app.route('/login')
 def login():
