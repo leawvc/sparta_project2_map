@@ -128,7 +128,7 @@
                         let title = card[i]['title']
                         let like = card[i]['like']
                         let postid = card[i]['postid']
-                        console.log(postid)
+
 
                         let temp_html = `<div class="card" style="margin: 5px 40px 65px 40px; float:left;">
                                             <div class="card-content">
@@ -160,6 +160,55 @@
             })
         }
 
+        function check_local() {
+            $('#cards').empty()
+            let local = $("#input-local").val();
+
+            console.log(local)
+            $.ajax({
+                type: "GET",
+                url: "/trip/index/read",
+                data: {give_local: local},
+                success: function (response) {
+                    console.log(response['result'])
+                    let card = response['result']
+                    for (let i = 0; i < card.length; i++) {
+                        let card_img = card[i]['img']
+                        let title = card[i]['title']
+                        let like = card[i]['like']
+                        let postid = card[i]['postid']
+
+
+                        let temp_html = `<div class="card" style="margin: 5px 40px 65px 40px; float:left;">
+                                            <div class="card-content">
+                                                <div class="media">
+                                                    <div class="media-left">
+                                                        <figure class="image is-4by3">
+                                                            <a href="/detail/${postid}">
+                                                                <img class="car_img" src="../static/${card_img}"
+                                                                     alt="Placeholder image"/>
+                                                            </a>
+                                                        </figure>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="columns">
+                                                {# detail 카드 제목 #}
+                                                <p class="is-three-quarters"><a href="/detail/${postid}">${title}</a></p>
+                                                {# detail 좋아요 아이콘 #}
+                                                <a>
+                                                    <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
+                                                         style="width: 20px; height: 20px"/>${like}
+                                                </a>
+                                            </div>
+                                        </div>`
+                        $('#cards').append(temp_html)
+                    }
+                }
+            })
+
+        }
+
     </script>
 
 
@@ -182,10 +231,11 @@
 {# 검색창 #}
 <div class="field has-addons field_background">
     <div class="control" style="margin:auto;">
-        <input class="input" style="width: 700px; height: 40px;" type="text" placeholder="지역을 입력하세요">
-        <a class="button is-info" style="height: 40px; float:right;">검색</a>
+        <input id = "input-local" class="input" style="width: 700px; height: 40px;" type="text" placeholder="지역을 입력하세요">
+        <buttun class="button is-info" onclick="check_local()" style="height: 40px; float:right;">검색</buttun>
     </div>
 </div>
+
 
 {# 리모컨 #}
 {#        <nav class="breadcrumb is-centered" aria-label="breadcrumbs">#}

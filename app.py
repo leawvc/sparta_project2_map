@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from pymongo import MongoClient
 from like import like_api
 from login import login_api
+from index import index_api
 from post import post_api
 from profile import profile_api
 from schedule import schedule_api
@@ -9,6 +10,7 @@ app = Flask(__name__)
 
 app.register_blueprint(like_api)
 app.register_blueprint(login_api)
+app.register_blueprint(index_api)
 app.register_blueprint(post_api)
 app.register_blueprint(profile_api)
 app.register_blueprint(schedule_api)
