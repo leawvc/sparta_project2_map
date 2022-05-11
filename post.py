@@ -1,12 +1,12 @@
 from flask import request, Blueprint
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from pymongo import MongoClient
-
+import jwt
 app = Flask(__name__)
 
 client = MongoClient('52.79.226.1', 27017, username='test', password='test')
 db = client.project_map
-
+SECRET_KEY = "team"
 post_api = Blueprint('post_api', __name__)
 
 @post_api.route("/api/post")
@@ -35,6 +35,7 @@ def createschedule():
     receive_y = request.form['give_y']
     receive_phone = request.form['give_phone']
     receive_url = request.form['give_url']
+
 
     doc = {
         'postid': receive_postid,
@@ -79,25 +80,37 @@ def alldelete():
 
 @post_api.route('/trip/posts/create', methods=['POST'])
 def createpost():
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
 
-    receive_postid = request.form['give_postid']
-    receive_userid = request.form['give_userid']
-    receive_img = request.form['give_img']
-    receive_day = request.form['give_day']
-    receive_title = request.form['give_title']
-    receive_like = request.form['give_like']
+        # 포스팅 생성
+        user_info = db.users.find_one({"username": payload["id"]})
+        receive_postid = request.form['give_postid']
+        receive_img = request.form['give_img']
+        receive_day = request.form['give_day']
+        receive_title = request.form['give_title']
+        receive_like = request.form['give_like']
 
-    doc = {
-        'postid' : receive_postid,
-        'userid': receive_userid,
-        'img': receive_img,
-        'day' : receive_day,
-        'title': receive_title,
-        'like': int(receive_like)
-    }
+        doc = {
+            "userid": user_info["username"],
+            "postid": receive_postid,
+            'img': receive_img,
+            'day' : receive_day,
+            'title': receive_title,
+            'like': int(receive_like)
+        }
 
-    db.post.insert_one(doc)
-    return jsonify({'result': 'createpoast success'})
+        db.post.insert_one(doc)
+        return jsonify({"result": "success", "msg": '포스팅 성공'})
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("home"))
+
+
+@post_api.route('/trip/posts/read', methods=['GET'])
+def readallpost():
+    result = list(db.post.find({},{'_id':False}))
+    return jsonify({'result': result})
 
 @post_api.route('/detail/<keyword>')
 def detail_plus(keyword):

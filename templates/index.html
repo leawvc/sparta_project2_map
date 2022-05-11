@@ -19,10 +19,11 @@
     <link href="https://hangeul.pstatic.net/hangeul_static/css/NanumGoDigANiGoGoDing.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
     <style>
 
-         {# 메인 로그 css #}
+        {# 메인 로그 css #}
         .design {
             font-family: 'Jua', sans-serif;
             font-size: 20px;
@@ -33,7 +34,7 @@
             border-radius: 10px;
         }
 
-         {# 검색창 Backgtound img css #}
+        {# 검색창 Backgtound img css #}
         .field_background {
             background-image: url("{{ url_for('static', filename='index_backdrop_img.jpg') }}");
             background-size: cover;
@@ -42,19 +43,19 @@
             padding-bottom: 60px;
         }
 
-         {# 카드 위지조정 #}
+        {# 카드 위지조정 #}
         .card_tool {
             width: 2000px;
             margin: auto;
         }
 
-         {# 카드 틀 css #}
+        {# 카드 틀 css #}
         .card {
             width: 350px;
             height: 410px;
         }
 
-         {# 지도이미지 css #}
+        {# 지도이미지 css #}
         .is-4by3 {
             width: 300px;
             height: 300px;
@@ -62,7 +63,7 @@
             display: block;
         }
 
-         {# 카드 제목 css #}
+        {# 카드 제목 css #}
         .is-three-quarters {
             width: 300px;
             padding-left: 35px;
@@ -71,12 +72,12 @@
 
         }
 
-         {# a 하이퍼링크 검정색으로 변환 #}
+        {# a 하이퍼링크 검정색으로 변환 #}
         a:link {
             color: black;
         }
 
-         {# like 버튼 css #}
+        {# like 버튼 css #}
         .like {
             margin: 20px auto 20px auto;
         }
@@ -86,29 +87,52 @@
 
     <script>
 
+        $(document).ready(function () {
+            console.log('{{ status }}')
+            if ('{{ status }}' == 'yes') {
+                $("#loginbtn").hide();
+                $("#logoutbtn").show();
+            } else {
+                $("#loginbtn").show();
+                $("#logoutbtn").hide();
+            }
+        })
+
+        function logout(){
+            $.removeCookie('mytoken');
+            alert('로그아웃!')
+            window.location.reload()
+        }
+
+
+
     </script>
 
 
 </head>
-    <body>
-         {# 윗 메뉴 바 #}
-        <div class="hero is-small is-primary">
-            <div class="hero-body has-text-centered">
-                <a class="title is-sparta" style="float:left" href="/">MAP</a>
-                <a href="/login"><button class="button is-primary is-light" style="float:right">Login</button></a>
-                <p class="design is-sparta"><a href="/plan">여행설계</a></p>
-            </div>
-        </div>
+<body>
+{# 윗 메뉴 바 #}
+<div class="hero is-small is-primary">
+    <div class="hero-body has-text-centered">
+        <a class="title is-sparta" style="float:left" href="/">MAP</a>
 
-         {# 검색창 #}
-        <div class="field has-addons field_background">
-            <div class="control" style="margin:auto;">
-                <input class="input" style="width: 700px; height: 40px;" type="text" placeholder="지역을 입력하세요">
-                <a class="button is-info" style="height: 40px; float:right;">검색</a>
-            </div>
-        </div>
+        <a href="/login">
+            <button id='loginbtn' class="button is-primary is-light" style="float:right">Login</button>
+        </a>
+        <button id='logoutbtn' onclick="logout()" class="button is-primary is-light" style="float:right">Logout</button>
+        <p class="design is-sparta"><a href="/plan">여행설계</a></p>
+    </div>
+</div>
 
-         {# 리모컨 #}
+{# 검색창 #}
+<div class="field has-addons field_background">
+    <div class="control" style="margin:auto;">
+        <input class="input" style="width: 700px; height: 40px;" type="text" placeholder="지역을 입력하세요">
+        <a class="button is-info" style="height: 40px; float:right;">검색</a>
+    </div>
+</div>
+
+{# 리모컨 #}
 {#        <nav class="breadcrumb is-centered" aria-label="breadcrumbs">#}
 {#            <ul>#}
 {#                <a href="#">Bulma</a>#}
@@ -117,31 +141,32 @@
 {#            </ul>#}
 {#        </nav>#}
 
-         {# detail 카드 #}
-        <div class="card_tool" style="width: 1700px; height: auto; margin: auto;">
-            <div class="card" style="margin: 5px 40px 65px 40px;">
-                 <div class="card-content">
-                     <div class="media">
-                         <div class="media-left">
-                             <figure class="image is-4by3">
-                                 <a href="/detail">
-                                     <img class="car_img" src="https://bulma.io/images/placeholders/96x96.png"
-                                          alt="Placeholder image">
-                                 </a>
-                             </figure>
-                         </div>
-                     </div>
-                 </div>
-                 <div class="columns">
-                      {# detail 카드 제목 #}
-                     <p class="is-three-quarters"><a href="/detail">여기에 제목을 넣을 생각입니다. 2줄 들어갑니다.</a></p>
-                     {# detail 좋아요 아이콘 #}
-                     <a>
-                         <img class="like" src="{{ url_for('static', filename='like-fill.png') }}" style="width: 20px; height: 20px">
-                     </a>
-                 </div>
-             </div>
+{# detail 카드 #}
+<div class="card_tool" style="width: 1700px; height: auto; margin: auto;">
+    <div class="card" style="margin: 5px 40px 65px 40px;">
+        <div class="card-content">
+            <div class="media">
+                <div class="media-left">
+                    <figure class="image is-4by3">
+                        <a href="/detail">
+                            <img class="car_img" src="https://bulma.io/images/placeholders/96x96.png"
+                                 alt="Placeholder image">
+                        </a>
+                    </figure>
+                </div>
+            </div>
         </div>
-    </body>
+        <div class="columns">
+            {# detail 카드 제목 #}
+            <p class="is-three-quarters"><a href="/detail">여기에 제목을 넣을 생각입니다. 2줄 들어갑니다.</a></p>
+            {# detail 좋아요 아이콘 #}
+            <a>
+                <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
+                     style="width: 20px; height: 20px">
+            </a>
+        </div>
+    </div>
+</div>
+</body>
 </html>
 
