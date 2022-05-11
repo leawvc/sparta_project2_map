@@ -30,6 +30,7 @@
             integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
     <script>
 
         let day; // 2박 3일
@@ -43,7 +44,7 @@
             day = -1;
             //초기 선택 일 = 1로 설정
             day_status = 1;
-
+            bsCustomFileInput.init()
             //큰 여행 리스트, 그 안에 일정 생성
             create_plan(day);
             read_schedule();
@@ -175,20 +176,24 @@
 
         function savepost(){
             let title = $('#mytitle').val();
-            console.log(title)
+            let file = $('#file')[0].files[0];
+
+            let form_data = new FormData()
+
+            form_data.append('give_postid', post_id)
+            form_data.append('give_img', file)
+            form_data.append('give_day', day_status)
+            form_data.append('give_title', title)
+
+
+            console.log(title, file)
             $.ajax({
                 type: "POST",
                 url: "/trip/posts/create",
-                data: {
-                    give_postid: post_id,
-                    give_userid: null,
-                    give_img: null,
-                    give_day: day_status,
-                    give_tag: null,
-                    give_title: title,
-                    give_like: 0
-                },
-
+                data: form_data,
+                cache: false,
+                contentType: false,
+                processData: false,
                 success: function (response) {
                     console.log(response['result'])
                     window.location.href='/'
@@ -240,8 +245,13 @@
             <input type="text" id="mytitle" style="font-size: 30px; text-align:center;">
         </div>
 
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="file">
+            <label style="font-size: 15px" class="custom-file-label" for="file">대표 이미지</label>
+        </div>
+
         <div>
-            <select style="float: right" id="select_day">
+            <select style="float: right; margin-top: 10px" id="select_day">
                 <option label="선택" selected></option>
                 <option value=1 label="하루"></option>
                 <option value=2 label="1박 2일"></option>

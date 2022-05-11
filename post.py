@@ -7,6 +7,8 @@ app = Flask(__name__)
 client = MongoClient('52.79.226.1', 27017, username='test', password='test')
 db = client.project_map
 SECRET_KEY = "team"
+from datetime import datetime
+
 post_api = Blueprint('post_api', __name__)
 
 @post_api.route("/api/post")
@@ -88,18 +90,29 @@ def createpost():
         # 포스팅 생성
         user_info = db.users.find_one({"username": payload["id"]})
         receive_postid = request.form['give_postid']
-        receive_img = request.form['give_img']
+        file = request.files['give_img']
         receive_day = request.form['give_day']
         receive_title = request.form['give_title']
-        receive_like = request.form['give_like']
+        receive_like = 0
+
+        extension = file.filename.split('.')[-1]
+
+        today = datetime.now()
+        mytime = today.strftime('%Y-%m-%d-%H-%M-%S')
+
+        filename = f'file-{mytime}'
+
+        save_to = f'static/{filename}.{extension}'
+        file.save(save_to)
 
         doc = {
             "userid": user_info["username"],
             "postid": int(receive_postid),
-            'img': receive_img,
+            'img': f'{filename}.{extension}',
             'day' : receive_day,
             'title': receive_title,
-            'like': int(receive_like)
+            'like': int(receive_like),
+            'time': today.strftime('%Y.%m.%d')
         }
 
         db.post.insert_one(doc)
@@ -116,7 +129,7 @@ def readallpost():
 @post_api.route('/detail/<keyword>')
 def detail_plus(keyword):
     # API에서 단어 뜻 찾아서 결과 보내기
-    post_result = db.post.find_one({'postid':str(keyword)},{'_id':False})
+    post_result = db.post.find_one({'postid':int(keyword)},{'_id':False})
     schedule_list = list(db.schedule.find({'postid':str(keyword)},{'_id':False}))
     print(post_result)
     print(schedule_list)
