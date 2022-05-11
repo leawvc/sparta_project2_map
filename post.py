@@ -18,7 +18,8 @@ def getid():
     if len(list(db.post.find({}, {'_id': False}))) == 0:
         result = 1
     else:
-        result = int(sorted(list(db.post.find({},{'_id':False})), key=lambda x: x['postid'])[-1]['postid']) + 1
+        print(list(db.post.find({},{'_id':False})))
+        result = int(sorted(list(db.post.find({},{'_id':False})), key=lambda x: x['postid'])[-1]['postid'])+1
 
     print(result)
 
@@ -94,7 +95,7 @@ def createpost():
 
         doc = {
             "userid": user_info["username"],
-            "postid": receive_postid,
+            "postid": int(receive_postid),
             'img': receive_img,
             'day' : receive_day,
             'title': receive_title,
