@@ -57,7 +57,7 @@
 
 <!-- 지도를 표시할 div 입니다 -->
 <div style="margin: 30px">
-    <h1 style="font-size: 20px; text-align: center">{{ post_result.title }}</h1>
+    <h1 style="font-size: 40px; text-align: center">{{ post_result.title }}</h1>
 </div>
 <div style="margin: 30px">
     <div id="map" style="float:left; width:48%;height:600px;"></div>
@@ -66,14 +66,15 @@
             {% for i in range(post_result.day|int) %}
                 {% set day = loop.index %}
                 <li class="list-group-item li" >
-                    <h4 style="margin-bottom: 10px;">{{day}}일</h4>
-                    <ul class="list-group" style="width: 250px; height: 400px; overflow: auto;">
+                    <h4 style="margin-bottom: 20px; font-size: 20px">{{day}}일</h4>
+                    <ul class="list-group" style="width: 250px; height: 400px; overflow: auto; margin: 10px">
                         {% for schedule in schedule_list %}
                             {% if schedule.date|int == day %}
                                 <li class="list-group-item" style="margin-bottom: 10px">
                                 <h5>{{ schedule.place_name }}</h5>
                                 <p style="font-size: 15px">{{ schedule.address }}</p>
-                                <p style="font-size: 12px; color: green">{{ schedule.address }}</p>
+                                <p style="font-size: 12px; color: green">{{ schedule.phone }}</p>
+                                <a href="https://map.kakao.com/link/to/{{schedule.place_name}},{{ schedule.y }},{{ schedule.x }}" style="float: right">길 찾기</a>
                             </li>
                             {% endif %}
                         {% endfor %}
@@ -136,7 +137,7 @@ for (var i = 0; i < positions.length; i ++) {
 var polyline = new kakao.maps.Polyline({
     path: linePath, // 선을 구성하는 좌표배열 입니다
     strokeWeight: 5, // 선의 두께 입니다
-    strokeColor: '#FFAE00', // 선의 색깔입니다
+    strokeColor: '#f50621', // 선의 색깔입니다
     strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
     strokeStyle: 'solid' // 선의 스타일입니다
 });
