@@ -92,9 +92,11 @@
             if ('{{ status }}' == 'yes') {
                 $("#loginbtn").hide();
                 $("#logoutbtn").show();
+                $("#mypagebtn").show();
             } else {
                 $("#loginbtn").show();
                 $("#logoutbtn").hide();
+                $("#mypagebtn").hide();
             }
         })
 
@@ -113,11 +115,58 @@
                 window.location.href = '/login'
             }
         }
+
+        $(document).ready(function () {
+            plane_cards();
+        });
+
+        function plane_cards() {
+            $.ajax({
+                type: "GET",
+                url: "/trip/posts/read",
+                data: {},
+                success: function (plane_cards) {
+                    let card = plane_cards['result']
+                    for (let i = 0; i < card.length; i++) {
+                        let card_img = card[i]['img']
+                        let title = card[i]['title']
+                        let like = card[i]['like']
+
+                        let temp_html = `<div class="card" style="margin: 5px 40px 65px 40px; float:left;">
+                                            <div class="card-content">
+                                                <div class="media">
+                                                    <div class="media-left">
+                                                        <figure class="image is-4by3">
+                                                            <a href="/detail">
+                                                                <img class="car_img" src="../static/${card_img}"
+                                                                     alt="Placeholder image"/>
+                                                            </a>
+                                                        </figure>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="columns">
+                                                {# detail 카드 제목 #}
+                                                <p class="is-three-quarters"><a href="/detail">${title}</a></p>
+                                                {# detail 좋아요 아이콘 #}
+                                                <a>
+                                                    <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
+                                                         style="width: 20px; height: 20px"/>${like}
+                                                </a>
+                                            </div>
+                                        </div>`
+                        $('#cards').append(temp_html)
+
+                    }
+                }
+            })
+        }
+
     </script>
 
 
 </head>
-<body>
+<body  >
 {# 윗 메뉴 바 #}
 <div class="hero is-small is-primary">
     <div class="hero-body has-text-centered">
@@ -127,7 +176,7 @@
             <button id='loginbtn' class="button is-primary is-light" style="float:right">Login</button>
         </a>
         <button id='logoutbtn' onclick="logout()" class="button is-primary is-light" style="float:right">Logout</button>
-
+        <a href="/mypage"><button id='mypagebtn' class="button is-primary is-light" style="float:right; margin-right: 5px">my page</button></a>
         <p class="design is-sparta" onclick="go_plan()"><a href="#">여행설계</a></p>
     </div>
 </div>
@@ -150,7 +199,7 @@
 {#        </nav>#}
 
 {# detail 카드 #}
-<div class="card_tool" style="width: 1700px; height: auto; margin: auto; background-color: pink">
+<div class="card_tool" id="cards" style="width: 1700px; height: auto; margin: auto; background-color: pink">
     <div class="card" style="margin: 5px 40px 65px 40px; float:left;">
         <div class="card-content">
             <div class="media">
@@ -166,38 +215,15 @@
         </div>
         <div class="columns">
             {# detail 카드 제목 #}
-            <p class="is-three-quarters"><a href="/detail">여기에 제목을 넣을 생각입니다. 2줄 들어갑니다.</a></p>
+            <p class="is-three-quarters"><a href="/detail">여기에 제목을 넣을 생각입니다. </a></p>
             {# detail 좋아요 아이콘 #}
             <a>
-                <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
+                <img class="like" src="{{ url_for('static', filename='like-fill.png') }}" onclick="like()"
                      style="width: 20px; height: 20px">
             </a>
         </div>
     </div>
 
-    <div class="card" style="margin: 5px 40px 65px 40px; float:left;">
-        <div class="card-content">
-            <div class="media">
-                <div class="media-left">
-                    <figure class="image is-4by3">
-                        <a href="/detail">
-                            <img class="car_img" src="https://bulma.io/images/placeholders/96x96.png"
-                                 alt="Placeholder image">
-                        </a>
-                    </figure>
-                </div>
-            </div>
-        </div>
-        <div class="columns">
-            {# detail 카드 제목 #}
-            <p class="is-three-quarters"><a href="/detail">여기에 제목을 넣을 생각입니다. 2줄 들어갑니다.</a></p>
-            {# detail 좋아요 아이콘 #}
-            <a>
-                <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
-                     style="width: 20px; height: 20px">
-            </a>
-        </div>
-    </div>
 
 
 </div>
