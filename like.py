@@ -42,4 +42,3 @@ def update_like():
         return redirect(url_for("main"))
 
 
-

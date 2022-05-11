@@ -17,21 +17,34 @@
             integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
     <link href="https://hangeul.pstatic.net/hangeul_static/css/NanumGoDigANiGoGoDing.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">
+{#    <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">#}
     <style>
-        .card-box {
-            /*display: inline-block;*/
+        .mycards {
             margin: 200px 150px;
             /*margin: 10px auto 0px auto;*/
             width: 25%;
             height: 25%;
+            width: 350px;
+            height: 410px;
         }
+
+        .card-image {
+            width: 25%;
+            height: 25%;
+            float: right;
+        }
+
     </style>
 
 
     <script>
+        // 프로필 페이지에서는 username 있는 상태로 get_mypost를 불러옴
+        $(document).ready(function () {
+            get_mypost();
+        })
         // 프로필 수정 (사진, 닉네임)
         function update_profile() {
+
             let name = $('#input-name').val()
             let file = $('#input-pic')[0].files[0]
             let form_data = new FormData()
@@ -51,44 +64,56 @@
                         window.location.reload()
                     }
                 }
-            })
+            });
         }
 
-        // 변수명 고치기
-        // 이미지 부분 수정해야함
+        {#내가 작성한 글 불러오기 #}
         function get_mypost() {
-            $("#mypost-list").empty()
+            {#if (username == undefined) {#}
+            {#    username == ""#}
+            {#console.log(username)#}
+
+            $("#card-box").empty()
             $.ajax({
                 type: "GET",
-                url: `/trip/mypage?id_give=${id}`,
+                url: '/mypage/getmypost',
                 data: {},
                 success: function (response) {
-                    let post = response["post"]
-                    for (let i = 0; i < post.length; i++) {
-                        let posting = post[i]["post"]
-                        console.log(post)
-                        let temp_html = `<div class="card-image" id="${postid}">
-                                    <figure class="image is-4by3" style="cursor: pointer" onclick="window.location.href='/detail/${postid}">
-                                            <img src="../static/${file}" class="post-img" alt=${title}>
-<!--                                            <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">-->
-                                        </figure>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="media">
-                                            <div class="media-content">
-                                                <p class="post-title">${title}</p>
-                                                <p class="tag">${tag}</p>
-                                                <p><a href="javascript.delet_post(${postid})">delete</a></p>
+                    let rows = response['mypost']
+                    for (let i = 0; i < rows.length; i++) {
+                        let title = rows[i]['title']
+                        let postid = rows[i]['postid']
+                        let img = rows[i]['img']
+                        console.log(rows)   // 콘솔에 출력됨
+                        // card-image 에 onclick 넣어서 상세페이지로 이동하게 만들기
+
+                        let temp_html = `<div class="card-box">
+                                            <div class="card-image">
+                                                <figure class="image is-4by3">
+                                                    <a href="/detail/${postid}">
+                                                    <img src="../static/${img}" class="post-img" alt="Placeholder Image" />
+                                                </figure>
                                             </div>
-                                        </div>
-                                    </div>`
-                                    $('#mypost-list').append(temp_html)
+                                                <div class="card-content">
+                                                    <div class="media" style="padding-bottom: 15px">
+                                                        <div class="media-content">
+                                                            <p class="post-title">${title}</p>
+                                                        </div>
+                                                    </div>
+                                                    <footer class="card-footer">
+{#                                    <!--                    편집 삭제 onclick 지정해주기-->#}
+                                                        <p><a href="#" class="card-footer-item" onclick="">Edit</a></p>
+
+                                                        <p><a href="#" class="card-footer-item" onclick="">delete</a></p>
+                                                    </footer>
+                                                </div>
+                                            </div>`
+                        $('#card-box').append(temp_html)
                     }
                 }
-            })
+            });
         }
     </script>
-
 </head>
 <body>
 
@@ -96,7 +121,7 @@
     <div class="hero-body has-text-centered">
         <h1 class="title is-sparta" style="float:left">MAP</h1>
         <button class="button is-primary is-light" style="float:right">Logout</button>
-    </div>
+</div>
 
 <!-- 프로필 영역-->
     <section class="hero is-white">
@@ -105,19 +130,19 @@
 
                 <figure class="media-left" style="align-self: center">
                     <a class="image is-96x96" href="#">
-                        <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile) }}">
+                        <img class="is-rounded" src="static/profile_placeholder.png">
                     </a>
                 </figure>
                 <div class="media-content">
                     <div class="content">
                         <p>
-                            <strong>{{ user_info.nickname }}</strong> <small>@{{ user_info.username }}</small>
+                            <strong>아이디</strong>
                             <br>
                         </p>
                     </div>
 
-                    <!-- 프로필 수정, 모달부분 -->
-{#<!--                    {% if status %}-->#}
+                    <!-- 프로필 수정, 모달부분 : 자기 프로필인 경우만 보임 -->
+                    {% if status %}
                     <nav id="btns-me" class="level is-mobile" style="margin-top:2rem">
                         <a class="button level-item has-text-centered is-sparta" aria-label="edit"
                            onclick='$("#modal-edit").addClass("is-active")'>
@@ -132,13 +157,6 @@
                                 <article class="media">
                                     <div class="media-content">
                                         <div class="field">
-                                            <label class="label" for="input-name">이름</label>
-                                            <p class="control">
-                                                <input id="input-name" class="input"
-                                                       placeholder="홍길동" value="{{ user_info.profile_name }}">
-                                            </p>
-                                        </div>
-                                        <div class="field">
                                             <label class="label" for="input-pic">프로필 사진</label>
 
                                             <div class="control is-expanded">
@@ -150,8 +168,11 @@
                                                                 class="fa fa-upload"></i></span>
                                                         <span class="file-label">파일 선택</span>
                                                          </span>
+
+                                                         {# 기본 프로필사진 #}
                                                         <span id="file-name" class="file-name"
                                                               style="width:100%;max-width:100%">{{ user_info.profile_pic }}</span>
+
                                                     </label>
                                                 </div>
                                             </div>
@@ -176,15 +197,15 @@
                         <button class="modal-close is-large" aria-label="close"
                                 onclick='$("#modal-edit").removeClass("is-active")'></button>
                     </div>
-{#<!--                    {% endif %}-->#}
+                    {% endif %}
                 </div>
             </article>
         </div>
     </section>
 </div>
-<!-- 테스트 하고 비우기 -->
-        <
-        <div class="card-box">
+
+    <div class="body">
+        <div class="mycards" id="card-box">
             <div class="card-image">
                 <figure class="image is-4by3">
                     <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">
@@ -198,12 +219,15 @@
                     </div>
                 </div>
                 <footer class="card-footer">
-<!--                    편집 삭제 onclick 지정해주기-->
+                    <!--                    편집 삭제 onclick 지정해주기-->
                     <a href="#" class="card-footer-item" onclick="">Edit</a>
                     <a href="#" class="card-footer-item" onclick="">Delete</a>
                 </footer>
             </div>
         </div>
+    </div>
+
+   </div>
 </div>
 </body>
 </html>
