@@ -5,6 +5,9 @@ from login import login_api
 from post import post_api
 from profile import profile_api
 from schedule import schedule_api
+import jwt
+SECRET_KEY = "team"
+
 app = Flask(__name__)
 
 app.register_blueprint(like_api)
@@ -26,7 +29,13 @@ def plan():
 
 @app.route('/mypage')
 def mypage():
-    return render_template('mypage.html')
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        return render_template('mypage.html', id = payload['id'])
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("main"))
+
 
 # @app.route('/detail')
 # def detail():

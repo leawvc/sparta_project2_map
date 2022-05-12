@@ -134,3 +134,13 @@ def detail_plus(keyword):
     print(post_result)
     print(schedule_list)
     return render_template("detail.html", post_result=post_result, schedule_list=schedule_list)
+
+@post_api.route('/trip/posts/delete', methods=['POST'])
+def delete_post():
+    post_postid = request.form['postid']
+    db.post.delete_one({"postid": int(post_postid)})
+    db.schedule.delete_many({"postid": str(post_postid)})
+    return jsonify({'result': 'success', 'msg': '삭제 했습니다.'})
+
+
+

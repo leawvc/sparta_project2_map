@@ -17,63 +17,88 @@
             integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
     <link href="https://hangeul.pstatic.net/hangeul_static/css/NanumGoDigANiGoGoDing.css" rel="stylesheet">
-{#    <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">#}
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <link href="https://hangeul.pstatic.net/hangeul_static/css/NanumJungHagSaeng.css" rel="stylesheet">
+
     <style>
-        .mycards {
-            margin: 200px 150px;
-            /*margin: 10px auto 0px auto;*/
-            width: 25%;
-            height: 25%;
-            width: 350px;
-            height: 410px;
+
+        {# a 하이퍼링크 검정색으로 변환 #}
+        a:link {
+            color: black;
         }
 
+        {# 카드 틀 css#}
+        .card-box {
+            width: 320px;
+            height: auto;
+            margin: 20px;
+            padding: 20px;
+            border: 5px solid #c3c8cd;
+            border-radius: 15px;
+
+        }
+
+        {# card 이미지 css #}
         .card-image {
-            width: 25%;
-            height: 25%;
-            float: right;
+            width: 250px;
+            height: 250px;
+            margin: auto;
+            display: block;
+        }
+
+        {# card 삭제, 저장 #}
+        .card-footer-item {
+            margin-bottom: -20px;
+            font-size: 25px;
+        }
+
+        {# a 하이퍼링크 검정색으로 변환 #}
+        a:link {
+            color: black;
+        }
+
+        {# 카드 자동 정렬 #}
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
         }
 
     </style>
 
-
     <script>
-        // 프로필 페이지에서는 username 있는 상태로 get_mypost를 불러옴
-        $(document).ready(function () {
-            get_mypost();
-        })
-        // 프로필 수정 (사진, 닉네임)
-        function update_profile() {
 
-            let name = $('#input-name').val()
-            let file = $('#input-pic')[0].files[0]
-            let form_data = new FormData()
-            form_data.append("file_give", file)
-            form_data.append("name_give", name)
-            console.log(name, file, form_data)
+        function logout(){
+            $.removeCookie('mytoken');
+            alert('로그아웃!')
+            window.location.href = '/'
+        }
 
+        function delete_word(postid) {
             $.ajax({
                 type: "POST",
-                url: "/trip/mypage/update",
-                data: form_data,
-                cache: false,
-                contentType: false,
+                url: `/trip/posts/delete`,
+                data: {
+                    postid : postid,
+                },
                 success: function (response) {
-                    if (response['result'] == "success") {
-                        alert(response["msg"])
-                        window.location.reload()
-                    }
+                    alert(response["msg"])
+                    window.location.reload()
                 }
             });
         }
 
+        $(document).ready(function () {
+            get_mypost();
+        });
+
         {#내가 작성한 글 불러오기 #}
         function get_mypost() {
-            {#if (username == undefined) {#}
-            {#    username == ""#}
-            {#console.log(username)#}
+           // if (username == undefined)
+           // username == ""
+           // console.log(username)
 
-            $("#card-box").empty()
             $.ajax({
                 type: "GET",
                 url: '/mypage/getmypost',
@@ -85,150 +110,58 @@
                         let postid = rows[i]['postid']
                         let img = rows[i]['img']
                         console.log(rows)   // 콘솔에 출력됨
-                        // card-image 에 onclick 넣어서 상세페이지로 이동하게 만들기
+                         //card-image 에 onclick 넣어서 상세페이지로 이동하게 만들기
 
-                        let temp_html = `<div class="card-box">
-                                            <div class="card-image">
-                                                <figure class="image is-4by3">
-                                                    <a href="/detail/${postid}">
-                                                    <img src="../static/${img}" class="post-img" alt="Placeholder Image" />
-                                                </figure>
-                                            </div>
+                        let temp_html = `<div class="card-box box">
+                                            <div class="mycards">
+                                                <div class="card-image">
+                                                    <figure class="image is-1by1">
+                                                        <a href="/detail/${postid}">
+                                                        <img src="../static/${img}" alt="Placeholder image" />
+                                                    </figure>
+                                                </div>
                                                 <div class="card-content">
                                                     <div class="media" style="padding-bottom: 15px">
                                                         <div class="media-content">
-                                                            <p class="post-title">${title}</p>
+                                                            <p class="post-title" style="font-size: 40px">${title}</p>
                                                         </div>
                                                     </div>
                                                     <footer class="card-footer">
-{#                                    <!--                    편집 삭제 onclick 지정해주기-->#}
-                                                        <p><a href="#" class="card-footer-item" onclick="">Edit</a></p>
-
-                                                        <p><a href="#" class="card-footer-item" onclick="">delete</a></p>
+                                                        <!--                    편집 삭제 onclick 지정해주기-->
+                                                        <a href="#" class="card-footer-item" onclick="">수정</a>
+                                                        <a href="#" class="card-footer-item" onclick="delete_word(${postid})">삭제</a>
                                                     </footer>
                                                 </div>
-                                            </div>`
+                                            </div>
+                                        </div>`
                         $('#card-box').append(temp_html)
                     }
                 }
             });
         }
+
     </script>
+
+
 </head>
 <body>
-
+{# 윗 메뉴 바 #}
 <div class="hero is-small is-primary">
     <div class="hero-body has-text-centered">
-        <h1 class="title is-sparta" style="float:left">MAP</h1>
-        <button class="button is-primary is-light" style="float:right">Logout</button>
+        <a class="title is-sparta" style="float:left" href="/">MAP</a>
+        </a>
+        <button id='logoutbtn' onclick="logout()" class="button is-primary is-light" style="float:right">Logout</button>
+    </div>
 </div>
-
-<!-- 프로필 영역-->
-    <section class="hero is-white">
-        <div class="hero-body" style="padding-bottom:1rem;margin:auto;min-width: 400px">
-            <article class="media">
-
-                <figure class="media-left" style="align-self: center">
-                    <a class="image is-96x96" href="#">
-                        <img class="is-rounded" src="static/profile_placeholder.png">
-                    </a>
-                </figure>
-                <div class="media-content">
-                    <div class="content">
-                        <p>
-                            <strong>아이디</strong>
-                            <br>
-                        </p>
-                    </div>
-
-                    <!-- 프로필 수정, 모달부분 : 자기 프로필인 경우만 보임 -->
-                    {% if status %}
-                    <nav id="btns-me" class="level is-mobile" style="margin-top:2rem">
-                        <a class="button level-item has-text-centered is-sparta" aria-label="edit"
-                           onclick='$("#modal-edit").addClass("is-active")'>
-                            프로필 수정&nbsp;&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil"
-                                                                                   aria-hidden="true"></i></span>
-                        </a>
-                    </nav>
-                    <div class="modal" id="modal-edit">
-                        <div class="modal-background" onclick='$("#modal-edit").removeClass("is-active")'></div>
-                        <div class="modal-content">
-                            <div class="box">
-                                <article class="media">
-                                    <div class="media-content">
-                                        <div class="field">
-                                            <label class="label" for="input-pic">프로필 사진</label>
-
-                                            <div class="control is-expanded">
-                                                <div class="file has-name">
-                                                    <label class="file-label" style="width:100%">
-                                                        <input id="input-pic" class="file-input" type="file"
-                                                               name="resume">
-                                                        <span class="file-cta"><span class="file-icon"><i
-                                                                class="fa fa-upload"></i></span>
-                                                        <span class="file-label">파일 선택</span>
-                                                         </span>
-
-                                                         {# 기본 프로필사진 #}
-                                                        <span id="file-name" class="file-name"
-                                                              style="width:100%;max-width:100%">{{ user_info.profile_pic }}</span>
-
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <nav class="level is-mobile">
-                                            <div class="level-left">
-                                            </div>
-                                            <div class="level-right">
-                                                <div class="level-item">
-                                                    <a class="button is-sparta" onclick="update_profile()">업데이트</a>
-                                                </div>
-                                                <div class="level-item">
-                                                    <a class="button is-sparta is-outlined"
-                                                       onclick='$("#modal-edit").removeClass("is-active")'>취소</a>
-                                                </div>
-                                            </div>
-                                        </nav>
-                                    </div>
-                                </article>
-                            </div>
-                        </div>
-                        <button class="modal-close is-large" aria-label="close"
-                                onclick='$("#modal-edit").removeClass("is-active")'></button>
-                    </div>
-                    {% endif %}
-                </div>
-            </article>
-        </div>
-    </section>
-</div>
-
-    <div class="body">
-        <div class="mycards" id="card-box">
-            <div class="card-image">
-                <figure class="image is-4by3">
-                    <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">
-                </figure>
-            </div>
-            <div class="card-content">
-                <div class="media" style="padding-bottom: 15px">
-                    <div class="media-content">
-                        <p class="post-title">Title</p>
-
-                    </div>
-                </div>
-                <footer class="card-footer">
-                    <!--                    편집 삭제 onclick 지정해주기-->
-                    <a href="#" class="card-footer-item" onclick="">Edit</a>
-                    <a href="#" class="card-footer-item" onclick="">Delete</a>
-                </footer>
-            </div>
-        </div>
+<div class="box" style="margin: 178px 80px auto 80px">
+    <h1 style="font-size: 50px; text-align: center" id="idname">{{ id }}의 마이 페이지 입니다</h1>
+    <hr style="background: #c0c0c0">
+    <div class="cards" id="card-box">
     </div>
 
-   </div>
 </div>
+
+
 </body>
 </html>
 
