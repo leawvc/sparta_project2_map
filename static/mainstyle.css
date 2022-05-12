@@ -1,9 +1,13 @@
     * {
-        font-family: 'NanumJungHagSaeng';
+        font-family: 'Jua', sans-serif;
     }
 
      /* background 색 입히기 css */
     html {
+        background: #f5f5f5;
+    }
+
+    body {
         background: #f5f5f5;
     }
 

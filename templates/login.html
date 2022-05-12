@@ -13,6 +13,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
     <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+    <!-- 폰트 및 css -->
+    <link href="https://hangeul.pstatic.net/hangeul_static/css/NanumGoDigANiGoGoDing.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='mainstyle.css') }}" rel="stylesheet">
 
     <a id="custom-login-btn" href="javascript:loginWithKakao()">
         <img
@@ -217,8 +221,15 @@
 
 </head>
 <body>
-<section class="hero is-white">
-</section>
+<div class="hero is-small is-primary">
+    <div class="hero-body has-text-centered">
+        <a class="title is-sparta " style="float:left" href="/">MAP</a>
+        </a>
+        <button class="button is-primary is-light" style="float:right">감사합니다</button>
+    </div>
+</div>
+{#<section class="hero is-white">#}
+{#</section>#}
 <section class="section">
     <div class="container">
         <div class="box" style="max-width: 480px;margin:auto">
