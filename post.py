@@ -84,6 +84,7 @@ def alldelete():
 @post_api.route('/trip/posts/create', methods=['POST'])
 def createpost():
     token_receive = request.cookies.get('mytoken')
+    print("post 만들기")
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
 
@@ -112,7 +113,8 @@ def createpost():
             'day' : receive_day,
             'title': receive_title,
             'like': int(receive_like),
-            'time': today.strftime('%Y.%m.%d')
+            'time': today.strftime('%Y.%m.%d'),
+            'like_by_me': False
         }
 
         db.post.insert_one(doc)
@@ -123,8 +125,21 @@ def createpost():
 
 @post_api.route('/trip/posts/read', methods=['GET'])
 def readallpost():
-    result = list(db.post.find({},{'_id':False}))
-    return jsonify({'result': result})
+    result = list(db.post.find({}, {'_id': False}).sort('postid', -1).limit(20))
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
+        for post in result:
+            cntlike = db.like.count_documents({'postid': str(post['postid'])})
+            like_by_me = bool(db.like.find_one({"postid": str(post["postid"]), "username": payload['id']}))
+            print(cntlike, like_by_me)
+            db.post.update_one({'postid':post['postid']}, {"$set":{"like":cntlike}})
+            db.post.update_one({'postid':post['postid']}, {"$set":{"like_by_me":like_by_me}})
+        result = list(db.post.find({}, {'_id': False}).sort('postid', -1).limit(20))
+        return jsonify({'result': result, 'msg':'success'})
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return jsonify({'result': result, 'msg':'success'})
 
 @post_api.route('/detail/<keyword>')
 def detail_plus(keyword):
@@ -140,6 +155,7 @@ def delete_post():
     post_postid = request.form['postid']
     db.post.delete_one({"postid": int(post_postid)})
     db.schedule.delete_many({"postid": str(post_postid)})
+    db.like.delete_many({"postid": str(post_postid)})
     return jsonify({'result': 'success', 'msg': '삭제 했습니다.'})
 
 

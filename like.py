@@ -11,7 +11,7 @@ client = MongoClient('52.79.226.1', 27017, username='test', password='test')
 db = client.project_map
 
 # 좋아요 누르면 포스트 아이디로 좋아요 저장
-@like_api.route('/like', methods=['POST'])
+@like_api.route('/update_like', methods=['POST'])
 def update_like():
     token_receive = request.cookies.get('mytoken')
 
@@ -21,12 +21,13 @@ def update_like():
         postid_receive = request.form['postid_give']
         action_receive = request.form['action_give']
 
+        print(postid_receive, action_receive)
         doc = {
             "postid": postid_receive,
-            "username": user_info['id'],
+            "username": user_info['username'],
         }
 
-        total_like = db.post.find_one({'postid': postid_receive})['like']
+        total_like = db.post.find_one({'postid': int(postid_receive)})['like']
 
         if action_receive == "like":
             db.like.insert_one(doc)

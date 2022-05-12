@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Make A Plane</title>
 
+    <!-- Font Awesome CSS -->
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
     <!-- Bulma CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
 
@@ -83,18 +86,62 @@
 
     <script>
 
+        let like_list = []
         $(document).ready(function () {
             console.log('{{ status }}')
             if ('{{ status }}' == 'yes') {
                 $("#loginbtn").hide();
                 $("#logoutbtn").show();
                 $("#mypagebtn").show();
+                console.log('{{ userid }}')
             } else {
                 $("#loginbtn").show();
                 $("#logoutbtn").hide();
                 $("#mypagebtn").hide();
+
             }
+            plane_cards();
         })
+
+        function toggle_like(post_id, type) {
+            console.log(post_id, type)
+            let $a_like = $(`#${post_id} a[aria-label='heart']`)
+            let $i_like = $a_like.find("i")
+            console.log($i_like)
+            if ($i_like.hasClass("fa-heart")) {
+                console.log('fa-heart')
+                $.ajax({
+                    type: "POST",
+                    url: "/update_like",
+                    data: {
+                        postid_give: post_id,
+                        action_give: "unlike"
+                    },
+                    success: function (response) {
+                        console.log("unlike")
+                        $i_like.addClass("fa-heart-o").removeClass("fa-heart")
+                        $a_like.find("span.like-num").text(response["count"])
+                    }
+                })
+            } else {
+                console.log('no-heart')
+                $.ajax({
+                    type: "POST",
+                    url: "/update_like",
+                    data: {
+                        postid_give: post_id,
+                        action_give: "like"
+                    },
+                    success: function (response) {
+                        console.log("like")
+                        $i_like.addClass("fa-heart").removeClass("fa-heart-o")
+                        $a_like.find("span.like-num").text(response["count"])
+                    }
+                })
+
+        }
+}
+
 
         function logout(){
             $.removeCookie('mytoken');
@@ -112,9 +159,7 @@
             }
         }
 
-        $(document).ready(function () {
-            plane_cards();
-        });
+
 
         function plane_cards() {
              $('#cards').empty()
@@ -123,40 +168,62 @@
                 url: "/trip/posts/read",
                 data: {},
                 success: function (plane_cards) {
-                    let card = plane_cards['result']
-                    for (let i = 0; i < card.length; i++) {
-                        let card_img = card[i]['img']
-                        let title = card[i]['title']
-                        let like = card[i]['like']
-                        let postid = card[i]['postid']
+
+                    if(plane_cards['msg']=='fail'){
+                        alert('로그인 후 이용해주세요')
+                        window.location.href = '/login'
+                    }else{
+                        let card = plane_cards['result']
+                        console.log(card)
+                        for (let i = 0; i < card.length; i++) {
+                            let card_img = card[i]['img']
+                            let title = card[i]['title']
+                            let like = card[i]['like']
+                            let postid = card[i]['postid']
 
 
-                        let temp_html = `<div class="card" style="margin: 5px 40px 65px 40px; float:left;">
-                                            <div class="card-content">
-                                                <div class="media">
-                                                    <div class="media-left">
-                                                        <figure class="image is-4by3">
-                                                            <a href="/detail/${postid}">
-                                                                <img class="car_img" src="../static/${card_img}"
-                                                                     alt="Placeholder image"/>
-                                                            </a>
-                                                        </figure>
+                            let class_heart = card[i]['like_by_me'] ? 'fa-heart' : 'fa-heart-o'
+                            let count_heart = card[i]['like']
+                            console.log(class_heart, count_heart)
+                            let temp_html = `<div class="card" id="${postid}" style="margin: 5px 40px 65px 40px; float:left;">
+                                                <div class="card-content">
+                                                    <div class="media">
+                                                        <div class="media-left">
+                                                            <figure class="image is-4by3">
+                                                                <a href="/detail/${postid}">
+                                                                    <img class="car_img" src="../static/${card_img}"
+                                                                         alt="Placeholder image"/>
+                                                                </a>
+                                                            </figure>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="columns">
-                                                {# detail 카드 제목 #}
-                                                <p class="is-three-quarters"><a href="/detail/${postid}">${title}</a></p>
-                                                {# detail 좋아요 아이콘 #}
-                                                <a>
-                                                    <img class="like" src="{{ url_for('static', filename='like-fill.png') }}"
-                                                         style="width: 20px; height: 20px"/>${like}
-                                                </a>
-                                            </div>
-                                        </div>`
-                        $('#cards').append(temp_html)
+                                                <div class="columns">
+                                                    {# detail 카드 제목 #}
+                                                    <p class="is-three-quarters"><a href="/detail/${postid}">${title}</a></p>
+                                                    {# detail 좋아요 아이콘 #}
 
+                                                        {% if status =='yes' %}
+                                                            <div class="level-left">
+                                                                <a class="level-item is-sparta" aria-label="heart"
+                                                                   onclick="toggle_like(${postid}, 'heart')">
+                                                                    <span class="icon is-small"><i class="fa ${class_heart}"
+                                                                       aria-hidden="true"></i></span>
+                                                                       <span class="like-num">${count_heart}</span>
+                                                                </a>
+                                                            </div>
+                                                        {% endif %}
+
+
+
+
+                                                </div>
+                                            </div>`
+                            $('#cards').append(temp_html)
+
+                        }
                     }
+
                 }
             })
         }

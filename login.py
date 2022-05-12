@@ -26,7 +26,7 @@ def home():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
         # payload로부터 아이디 들고 와서 클라이언트로 보냄
         user_info = db.users.find_one({"username": payload["id"]})
-        return render_template('index.html', user_info=user_info, status='yes')
+        return render_template('index.html', user_info=user_info, status='yes', userid=payload['id'])
     except jwt.ExpiredSignatureError:
         return render_template('index.html', status='no')
     except jwt.exceptions.DecodeError:

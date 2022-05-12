@@ -187,7 +187,9 @@
             form_data.append('give_day', day_status)
             form_data.append('give_title', title)
 
-
+            if(file == undefined){
+                alert('이미지를 업로드 해주세요')
+            }
             console.log(title, file)
             $.ajax({
                 type: "POST",
