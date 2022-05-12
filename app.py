@@ -37,6 +37,7 @@ def mypage():
         return render_template('mypage.html', id = payload['id'])
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("main"))
+    print(1)
 
 
 # @app.route('/detail')
